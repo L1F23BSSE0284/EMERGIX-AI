@@ -28,6 +28,7 @@ const initialRequests = [
     description: 'A person needs immediate medical assistance.',
     location: 'Gulberg, Lahore',
     status: 'Pending',
+    citizenName: 'Demo Citizen',
   },
   {
     id: 'ER-002',
@@ -35,6 +36,7 @@ const initialRequests = [
     description: 'A road accident has been reported. Assistance is needed.',
     location: 'Model Town, Lahore',
     status: 'Pending',
+    citizenName: 'Demo Citizen',
   },
   {
     id: 'ER-003',
@@ -42,6 +44,7 @@ const initialRequests = [
     description: 'Smoke and fire reported in a residential building.',
     location: 'Johar Town, Lahore',
     status: 'In Progress',
+    citizenName: 'Demo Citizen',
   },
 ];
 
@@ -92,7 +95,10 @@ export default function App() {
     }
 
     if (password.length < 6) {
-      Alert.alert('Weak Password', 'Password must contain at least 6 characters.');
+      Alert.alert(
+        'Weak Password',
+        'Password must contain at least 6 characters.'
+      );
       return;
     }
 
@@ -183,6 +189,14 @@ export default function App() {
       )
     );
 
+    setEmergencyReports((previousReports) =>
+      previousReports.map((report) =>
+        report.id === requestId
+          ? { ...report, status: 'Accepted' }
+          : report
+      )
+    );
+
     Alert.alert(
       'Request Accepted',
       `You have accepted emergency request ${requestId}.`
@@ -220,7 +234,10 @@ export default function App() {
 
   const handleUpdateProfile = () => {
     if (!name.trim() || !phone.trim()) {
-      Alert.alert('Missing Information', 'Name and phone number are required.');
+      Alert.alert(
+        'Missing Information',
+        'Name and phone number are required.'
+      );
       return;
     }
 
@@ -270,40 +287,54 @@ export default function App() {
     }
   };
 
-  const handleEmergencySubmit = () => {
-    if (!emergencyCategory || !description.trim() || !location.trim()) {
-      Alert.alert(
-        'Missing Information',
-        'Select a category and enter description and location.'
-      );
-      return;
-    }
-
-    const newReport = {
-      id: `REPORT-${Date.now()}`,
-      citizenName: citizenUser.name,
-      category: emergencyCategory,
-      description: description.trim(),
-      location: location.trim(),
-      status: 'Submitted',
-    };
-
-    setEmergencyReports((previousReports) => [
-      newReport,
-      ...previousReports,
-    ]);
-
+  
+const handleEmergencySubmit = () => {
+  if (!emergencyCategory || !description.trim() || !location.trim()) {
     Alert.alert(
-      'Emergency Report Created',
-      'Your report has been added to the demonstration app.'
+      'Missing Information',
+      'Select a category and enter description and location.'
     );
+    return;
+  }
 
-    setEmergencyCategory('');
-    setDescription('');
-    setLocation('');
-    setGpsLocation(null);
-    setScreen('home');
+  const newReport = {
+    id: `REPORT-${Date.now()}`,
+    citizenName: citizenUser.name,
+    category: emergencyCategory,
+    description: description.trim(),
+    location: location.trim(),
+    status: 'Submitted',
   };
+
+  setEmergencyReports((previousReports) => [
+    newReport,
+    ...previousReports,
+  ]);
+
+  setSampleRequests((previousRequests) => [
+    {
+      id: newReport.id,
+      category: newReport.category,
+      description: newReport.description,
+      location: newReport.location,
+      status: 'Pending',
+      citizenName: newReport.citizenName,
+    },
+    ...previousRequests,
+  ]);
+
+  Alert.alert(
+    'Debug Test',
+    `Volunteer requests updated.\n\nReport ID: ${newReport.id}\nCategory: ${newReport.category}\nCitizen: ${newReport.citizenName}`
+  );
+
+  setEmergencyCategory('');
+  setDescription('');
+  setLocation('');
+  setGpsLocation(null);
+  setScreen('home');
+};
+
 
   const renderLogin = () => (
     <>
@@ -524,7 +555,7 @@ export default function App() {
 
       <View style={styles.demoNotice}>
         <Text style={styles.demoNoticeText}>
-          Sample requests for demonstration only
+          Newly submitted citizen reports appear here
         </Text>
       </View>
 
@@ -553,6 +584,13 @@ export default function App() {
 
           <Text style={styles.requestLabel}>Location</Text>
           <Text style={styles.requestValue}>{request.location}</Text>
+
+          {request.citizenName && (
+            <>
+              <Text style={styles.requestLabel}>Reported By</Text>
+              <Text style={styles.requestValue}>{request.citizenName}</Text>
+            </>
+          )}
 
           {request.status === 'Pending' && (
             <Pressable
